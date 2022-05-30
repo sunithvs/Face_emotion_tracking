@@ -31,7 +31,17 @@ if face_detection_results.detections:
             print(f'{mp_face_detection.FaceKeyPoint(i).name}:')
             print(f'{face_data.relative_keypoints[mp_face_detection.FaceKeyPoint(i).value]}')
 
+img_copy = img[:, :, ::-1].copy()
+
+if face_detection_results.detections:
+
+    for face_no, face in enumerate(face_detection_results.detections):
+        mp_drawing.draw_detection(image=img_copy, detection=face,
+                                  keypoint_drawing_spec=mp_drawing.DrawingSpec(color=(255, 0, 0),
+                                                                               thickness=2,
+                                                                               circle_radius=2))
 fig = plt.figure(figsize=[10, 10])
+
 plt.title("Resultant Image")
 plt.axis('off')
 plt.imshow(img_copy)
