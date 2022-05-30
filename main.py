@@ -18,7 +18,8 @@ def get_rect(image: np.ndarray, detection):
     ]
 
 
-def main():
+def get_faces():
+    faces = []
     face_detection = mp.solutions.face_detection.FaceDetection(model_selection=0, min_detection_confidence=0.5)
     img = cv2.imread("data/img_1.png")
 
@@ -30,8 +31,12 @@ def main():
     for face in face_detection_results.detections:
         (x1, y1), (x2, y2) = get_rect(img, face)
 
-        cv2.imshow("crop", img[y1:y2, x1:x2])
-        cv2.waitKey()
+        faces.append(img[y1:y2, x1:x2])
+    return faces
+
+
+def main():
+    print(get_faces())
 
 
 if __name__ == "__main__":
