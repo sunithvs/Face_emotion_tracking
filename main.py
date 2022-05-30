@@ -1,48 +1,72 @@
+import math
+from typing import Union, Tuple
+
 import cv2
 import numpy as np
 import mediapipe as mp
-import matplotlib.pyplot as plt
+
+# import matplotlib.pyplot as plt
 
 mp_face_detection = mp.solutions.face_detection
 
 face_detection = mp_face_detection.FaceDetection(model_selection=0, min_detection_confidence=0.5)
 
-mp_drawing = mp.solutions.drawing_utils
 img = cv2.imread("data/img_1.png")
+img = img[:, :, ::-1]
+img_cpy = img.copy()
 
-face_detection_results = face_detection.process(img[:, :, ::-1])
+face_detection_results = face_detection.process(img)
 
-img_copy = img[:, :, ::-1].copy()
+
+def _normalized_to_pixel_coordinates(
+        normalized_x: float, normalized_y: float, image_width: int,
+        image_height: int) -> Union[None, Tuple[int, int]]:
+
+    # Checks if the float value is between 0 and 1.
+    def is_valid_normalized_value(value: float) -> bool:
+        return (value > 0 or math.isclose(0, value)) and (value < 1 or
+                                                          math.isclose(1, value))
+
+    if not (is_valid_normalized_value(normalized_x) and
+            is_valid_normalized_value(normalized_y)):
+        return None
+
+    x_px = min(math.floor(normalized_x * image_width), image_width - 1)
+    y_px = min(math.floor(normalized_y * image_height), image_height - 1)
+    return x_px, y_px
+
+
+def get_rect(image: np.ndarray, detection):
+    image_rows, image_cols, _ = image.shape
+
+    location = detection.location_data
+
+    relative_bounding_box = location.relative_bounding_box
+    rect_start_point = _normalized_to_pixel_coordinates(
+        relative_bounding_box.xmin, relative_bounding_box.ymin, image_cols,
+        image_rows)
+    rect_end_point = _normalized_to_pixel_coordinates(
+        relative_bounding_box.xmin + relative_bounding_box.width,
+        relative_bounding_box.ymin + relative_bounding_box.height, image_cols,
+        image_rows)
+
+    return rect_start_point, rect_end_point
+
+
 # print(face_detection_results.detections)
 if face_detection_results.detections:
 
     for face_no, face in enumerate(face_detection_results.detections):
-        # print(face_no, face)
         print(f'FACE NUMBER: {face_no + 1}')
-        print('==============================')
 
-        print(f'FACE CONFIDENCE: {round(face.score[0], 2)}')
+        box = face.location_data.relative_bounding_box
 
-        face_data = face.location_data
+        (x1, y1), (x2, y2) = get_rect(img, face)
 
-        print(f'nFACE BOUNDING BOX:n{face_data.relative_bounding_box}')
+        print(box)
+        print((x1, y1), (x2, y2), img.shape)
 
-        for i in range(2):
-            print(f'{mp_face_detection.FaceKeyPoint(i).name}:')
-            print(f'{face_data.relative_keypoints[mp_face_detection.FaceKeyPoint(i).value]}')
-
-img_copy = img[:, :, ::-1].copy()
-
-if face_detection_results.detections:
-
-    for face_no, face in enumerate(face_detection_results.detections):
-        mp_drawing.draw_detection(image=img_copy, detection=face,
-                                  keypoint_drawing_spec=mp_drawing.DrawingSpec(color=(255, 0, 0),
-                                                                               thickness=2,
-                                                                               circle_radius=2))
-fig = plt.figure(figsize=[10, 10])
-
-plt.title("Resultant Image")
-plt.axis('off')
-plt.imshow(img_copy)
-plt.show()
+        # cv2.imshow("head", cv2.rectangle(img_cpy, (x1, y1), (x2, y2), color=(255,0,0)))
+        cv2.imshow("crop", img_cpy[y1:y2, x1:x2])
+        # cv2.imshow("box", )
+        cv2.waitKey()
