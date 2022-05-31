@@ -6,9 +6,10 @@ def main():
     detector = FER(mtcnn=True)
 
     emotion_peoples = {}
-    img = cv2.imread("data/img_2.png")
-
+    img = cv2.imread("data/img_4.png")
+    count = 0
     for emotions in detector.detect_emotions(img):
+        count += 1
         e_max, e_name = 0, ''
 
         emotions = emotions['emotions']
@@ -22,7 +23,7 @@ def main():
     e_max, e_name = 0, ''
 
     print("\n\n-------------------------------------------------------------------\n\n")
-    print("There are ")
+    print(f"There are {count}  people out of them")
 
     for emotion in emotion_peoples:
         eno = emotion_peoples[emotion]
