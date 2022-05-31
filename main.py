@@ -6,7 +6,7 @@ def main():
     detector = FER(mtcnn=True)
 
     emotion_peoples = {}
-    img = cv2.imread("data/img_1.png")
+    img = cv2.imread("data/img_2.png")
 
     for emotions in detector.detect_emotions(img):
         e_max, e_name = 0, ''
