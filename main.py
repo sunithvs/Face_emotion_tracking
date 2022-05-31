@@ -11,7 +11,6 @@ def main():
     for emotions in detector.detect_emotions(img):
         count += 1
         e_max, e_name = 0, ''
-
         emotions = emotions['emotions']
 
         for emotion in emotions:
