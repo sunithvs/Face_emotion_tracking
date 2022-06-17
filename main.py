@@ -6,7 +6,7 @@ def main():
     detector = FER(mtcnn=True)
 
     emotion_peoples = {}
-    img = cv2.imread("data/img_4.png")
+    img = cv2.imread("data/img.png")
     count = 0
     for emotions in detector.detect_emotions(img):
         count += 1
